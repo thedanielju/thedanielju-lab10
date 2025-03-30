@@ -41,7 +41,7 @@ public class WordCounter {
         }
 
         if (!foundStop) {
-            throw new InvalidStopwordException("Stopword " + stop + " was not found in the text");
+            throw new InvalidStopwordException("Couldn't find stopword: " + stop);
         }
 
         if (count < 5) {
