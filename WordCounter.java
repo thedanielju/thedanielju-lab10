@@ -5,7 +5,8 @@ import java.io.IOException;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
-
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Scanner;
 
 //coutns number of words up to and including the stopword
@@ -19,36 +20,40 @@ import java.util.Scanner;
 public class WordCounter {
     
     public static int processText(StringBuffer text, String stop) throws InvalidStopwordException, TooSmallText {
-        
         if (text == null) {
             text = new StringBuffer();
         }
-    
         Pattern regex = Pattern.compile("[a-zA-Z0-9']+");
         Matcher regexMatcher = regex.matcher(text);
-
-        int count = 0;
-        boolean foundStop = (stop == null);
-
+        
+        List<String> words = new ArrayList<>();
         while (regexMatcher.find()) {
-            String word = regexMatcher.group();
-            count++;
+            words.add(regexMatcher.group());
+        }
+        int totalWords = words.size();
 
-            if (stop != null && word.equals(stop)) {
-                foundStop = true;
-                break;
+        if (totalWords < 5) {
+            throw new TooSmallText("Only found " + totalWords + " words.");
+        }
+
+        if (stop == null) {
+            return totalWords;
+        } else {
+            int count = 0;
+            boolean foundStop = false;
+
+            for (String word : words) {
+                count++;
+                if (word.equals(stop)) {
+                    foundStop = true;
+                    break;
+                }
             }
+            if (!foundStop) {
+                throw new InvalidStopwordException("Couldn't find stopword: " + stop);
+            }
+            return count;
         }
-
-        if (!foundStop) {
-            throw new InvalidStopwordException("Couldn't find stopword: " + stop);
-        }
-
-        if (count < 5) {
-            throw new TooSmallText("Only found " + count + " words.");
-        }
-
-        return count;
     }
 
     public static StringBuffer processFile(String path) throws EmptyFileException {
