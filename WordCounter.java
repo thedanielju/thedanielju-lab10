@@ -45,7 +45,7 @@ public class WordCounter {
         }
 
         if (count < 5) {
-            throw new TooSmallText("The text contains less than 5 words ( " + count + " )");
+            throw new TooSmallText("Only found " + count + " words.");
         }
 
         return count;
