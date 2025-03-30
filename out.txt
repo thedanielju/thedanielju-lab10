@@ -1,9 +1,9 @@
 choose an option, 1: process file, 2: process text: 
-Word count: 5
+Found 5 words.
 choose an option, 1: process file, 2: process text: 
-Word count: 9
+Found 9 words.
 choose an option, 1: process file, 2: process text: 
-empty file
-The text contains less than 5 words ( 0 )
+file1.txt was empty
+TooSmallText: Only found 0 words.
 choose an option, 1: process file, 2: process text: 
-The text contains less than 5 words ( 2 )
+TooSmallText: Only found 2 words.
