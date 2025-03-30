@@ -19,7 +19,7 @@ import java.util.Scanner;
 
 public class WordCounter {
     
-    public int processTest(StringBuffer text, String stop) throws InvalidStopwordException, TooSmallText {
+    public int processText(StringBuffer text, String stop) throws InvalidStopwordException, TooSmallText {
         
         if (text == null) {
             text = new StringBuffer();
@@ -88,4 +88,61 @@ public class WordCounter {
 
     }
 
+    public static void main(String[] args) {
+        Scanner scanner = new Scanner(System.in);
+        WordCounter counter = new WordCounter();
+
+        int option = 0;
+        System.out.println("Choose an option, 1: process file, 2: process text: ");
+        
+        try {
+            option = Integer.parseInt(scanner.nextLine());
+            if (option != 1 && option != 2) {
+                System.out.println("Option has to be 1 or 2");
+            }
+        } catch (NumberFormatException e) {
+            System.out.println("Enter a valid integer");
+        }
+
+        if (option == 1) {
+            String filePath = (args.length >= 1) ? args[0] : "";
+            if (filePath.isEmpty()) {
+                System.out.println("Enter the file path: ");
+                filePath = scanner.nextLine();
+            }
+
+            try {
+                text = counter.processFile(filePath);
+            } catch (EmptyFileException e) {
+                System.out.println(e.getMessage());
+                //continues with empty text
+            }
+        } else { //option 2
+            System.out.println("Enter the text: ");
+            String line;
+            while (!(line = scanner.nextLine()).isEmpty()) {
+                text.append(line).append("\n");
+            }
+        }
+
+        try {
+            int wordCount = counter.processText(text, stop);
+            System.out.println("Word count: " + wordCount);
+        } catch (InvalidStopwordException e) {
+            System.out.println(e.getMessage());
+            System.out.println("Enter a new stopping word: ");
+            stop = scanner.nextLine();
+            
+            try {
+                int wordCount = counter.processText();
+                System.out.println("Word count: " + wordCount);
+            } catch (InvalidStopwordException e) {
+                System.out.println("Stop " + stop + " not found, processing ending");
+            } catch (TooSmallText e1) {
+                System.out.println(e1.getMessage());
+            }
+        } catch (TooSmallText e) {
+            System.out.println(e.getMessage());
+        }
+    }
 }
