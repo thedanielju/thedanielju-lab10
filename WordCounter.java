@@ -1,4 +1,3 @@
-import java.util.regex.Pattern;
 import java.util.regex.*;
 
 import java.io.IOException;
@@ -25,7 +24,6 @@ public class WordCounter {
             text = new StringBuffer();
         }
     
-
         Pattern regex = Pattern.compile("[a-zA-Z0-9']+");
         Matcher regexMatcher = regex.matcher(text);
 
@@ -33,7 +31,7 @@ public class WordCounter {
         boolean foundStop = (stop == null);
 
         while (regexMatcher.find()) {
-            String word = regexMatcher.group(); //?
+            String word = regexMatcher.group();
             count++;
 
             if (stop != null && word.equals(stop)) {
@@ -56,93 +54,111 @@ public class WordCounter {
     public StringBuffer processFile(String path) throws EmptyFileException {
         Scanner scanner = new Scanner(System.in);
         File file = new File(path);
+        StringBuffer stuff = new StringBuffer();
+        boolean fileRead = false;
 
-        while (!file.exists() || !file.isFile()) { //exception handling
-            System.out.println("file not found, please enter a valid path to the file");
-            path = scanner.nextLine();
-            file = new File(path);
-        }
+        try {
+            while (!fileRead) {
+                if (!file.exists() || !file.isFile()) {
+                    System.out.println("file not found, enter a valid path to the file");
+                    path = scanner.nextLine();
+                    file = new File(path);
+                    continue;
+                }
 
-        StringBuffer stuff = new StringBuffer(); //review StringBuffer
-
-        try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
-            String line;
-            while ((line = reader.readLine()) != null) {
-                stuff.append(line).append("\n");
+                try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
+                    String line;
+                    while ((line = reader.readLine()) != null) {
+                        stuff.append(line).append("\n");
+                    }
+                    fileRead = true; // flag file as succesfully read
+                } catch (IOException e) {
+                    System.out.println("error reading file, enter a valid path to the file");
+                    path = scanner.nextLine();
+                    file = new File(path);
+                }
             }
-        } catch (IOException e) {
-            System.out.println("Error reading file, enter a valid path to the file");
-            path = scanner.nextLine();
-            try {
-                return processFile(path);
-            } catch (EmptyFileException a) {
-                throw a;
+
+            if (stuff.length() == 0) {
+                throw new EmptyFileException("empty file");
             }
+            return stuff;
+        } finally {
+            scanner.close(); 
         }
-
-        if (stuff.length() == 0) {
-            throw new EmptyFileException("empty file");
-        }
-
-        return stuff;
-
     }
 
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
         WordCounter counter = new WordCounter();
+        StringBuffer text = new StringBuffer();
+        String stop = null;
 
-        int option = 0;
-        System.out.println("Choose an option, 1: process file, 2: process text: ");
-        
-        try {
-            option = Integer.parseInt(scanner.nextLine());
-            if (option != 1 && option != 2) {
-                System.out.println("Option has to be 1 or 2");
-            }
-        } catch (NumberFormatException e) {
-            System.out.println("Enter a valid integer");
-        }
-
-        if (option == 1) {
-            String filePath = (args.length >= 1) ? args[0] : "";
-            if (filePath.isEmpty()) {
-                System.out.println("Enter the file path: ");
-                filePath = scanner.nextLine();
-            }
-
-            try {
-                text = counter.processFile(filePath);
-            } catch (EmptyFileException e) {
-                System.out.println(e.getMessage());
-                //continues with empty text
-            }
-        } else { //option 2
-            System.out.println("Enter the text: ");
-            String line;
-            while (!(line = scanner.nextLine()).isEmpty()) {
-                text.append(line).append("\n");
-            }
+        if (args.length >= 2) { // check if at least 2 command line arguments are present, then set stop to the second arg
+            stop = args[1];
         }
 
         try {
-            int wordCount = counter.processText(text, stop);
-            System.out.println("Word count: " + wordCount);
-        } catch (InvalidStopwordException e) {
-            System.out.println(e.getMessage());
-            System.out.println("Enter a new stopping word: ");
-            stop = scanner.nextLine();
+            int option = 0;
+            boolean validOption = false;
             
+            while (!validOption) {
+                System.out.println("choose an option, 1: process file, 2: process text: ");
+                try {
+                    option = Integer.parseInt(scanner.nextLine());
+                    if (option != 1 && option != 2) {
+                        System.out.println("option has to be 1 or 2");
+                        continue;
+                    }
+                    validOption = true;
+                } catch (NumberFormatException e) {
+                    System.out.println("enter a valid integer");
+                }
+            }
+
+            if (option == 1) { //option 1
+                String filePath = (args.length >= 1) ? args[0] : "";
+                if (filePath.isEmpty()) {
+                    System.out.println("enter the file path: ");
+                    filePath = scanner.nextLine();
+                }
+
+                try {
+                    text = counter.processFile(filePath);
+                } catch (EmptyFileException e) {
+                    System.out.println(e.getMessage());
+                    //continues with empty text
+                }
+            } else { //option 2
+                System.out.println("Enter the text: ");
+                String line;
+                while (!(line = scanner.nextLine()).isEmpty()) {
+                    text.append(line).append("\n");
+                }
+            }
+
+            // process text with stopword
             try {
-                int wordCount = counter.processText();
+                int wordCount = counter.processText(text, stop);
                 System.out.println("Word count: " + wordCount);
             } catch (InvalidStopwordException e) {
-                System.out.println("Stop " + stop + " not found, processing ending");
-            } catch (TooSmallText e1) {
-                System.out.println(e1.getMessage());
+                System.out.println(e.getMessage());
+                System.out.println("Enter a new stopping word: ");
+                stop = scanner.nextLine();
+                
+                try {
+                    int wordCount = counter.processText(text, stop); 
+                    System.out.println("Word count: " + wordCount);
+                } catch (InvalidStopwordException e1) { 
+                    System.out.println("Stop " + stop + " not found, processing ending");
+                } catch (TooSmallText e2) {
+                    System.out.println(e2.getMessage());
+                }
+            } catch (TooSmallText e) {
+                System.out.println(e.getMessage());
             }
-        } catch (TooSmallText e) {
-            System.out.println(e.getMessage());
+        } finally {
+            scanner.close(); 
         }
     }
 }
