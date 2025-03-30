@@ -18,7 +18,7 @@ import java.util.Scanner;
 
 public class WordCounter {
     
-    public int processText(StringBuffer text, String stop) throws InvalidStopwordException, TooSmallText {
+    public static int processText(StringBuffer text, String stop) throws InvalidStopwordException, TooSmallText {
         
         if (text == null) {
             text = new StringBuffer();
@@ -51,7 +51,7 @@ public class WordCounter {
         return count;
     }
 
-    public StringBuffer processFile(String path) throws EmptyFileException {
+    public static StringBuffer processFile(String path) throws EmptyFileException {
         Scanner scanner = new Scanner(System.in);
         File file = new File(path);
         StringBuffer stuff = new StringBuffer();
