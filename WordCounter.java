@@ -19,34 +19,38 @@ import java.io.FileReader;
 public class WordCounter {
     
     public int processTest(StringBuffer text, String stop) throws InvalidStopwordException, TooSmallText {
+        
         if (text == null) {
-            text = new StringBuffer()
+            text = new StringBuffer();
         }
-    }
+    
 
-    Pattern regex = Pattern.compile("[a-zA-Z0-9']+");
-    Matcher regexMatcher = regex.matcher(text);
+        Pattern regex = Pattern.compile("[a-zA-Z0-9']+");
+        Matcher regexMatcher = regex.matcher(text);
 
-    int count = 0;
-    boolean foundStop = (stopword == null);
+        int count = 0;
+        boolean foundStop = (stop == null);
 
-    while (regexMatcher.find()) {
-        String word = regexMatcher.group(); //?
-        count++;
+        while (regexMatcher.find()) {
+            String word = regexMatcher.group(); //?
+            count++;
 
-        if (stopword != null && word.equals(stopword)) {
-            foundStop = true;
-            break;
+            if (stop != null && word.equals(stop)) {
+                foundStop = true;
+                break;
+            }
         }
+
+        if (!foundStop) {
+            throw new InvalidStopwordException("Stopword " + stop + " was not found in the text");
+        }
+
+        if (count < 5) {
+            throw new TooSmallText("The text contains less than 5 words ( " + count + " )");
+        }
+
+        return count;
     }
 
-    if (!foundStop) {
-        throw new InvalidStopwordException("Stopword " + stopword + " was not found in the text");
-    }
 
-    if (count < 5) {
-        throw new TooSmallText("The text contains less than 5 words ( " + count + " )");
-    }
-
-    return count;
 }
